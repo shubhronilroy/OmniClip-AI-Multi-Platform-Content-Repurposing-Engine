@@ -1,0 +1,141 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #080b14;
+  --foreground: #f1f5f9;
+}
+
+body {
+  color: var(--foreground);
+  background-color: var(--background);
+  font-family: 'Open Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Ambient Fluid Background Glow Blobs */
+.bg-ambient-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.bg-ambient-glow::before {
+  content: '';
+  position: absolute;
+  top: -15%;
+  right: -10%;
+  width: 65vw;
+  height: 65vw;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 201, 255, 0.12) 0%, rgba(37, 99, 235, 0.08) 40%, transparent 70%);
+  filter: blur(80px);
+}
+
+.bg-ambient-glow::after {
+  content: '';
+  position: absolute;
+  bottom: -20%;
+  left: -15%;
+  width: 75vw;
+  height: 75vw;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.09) 0%, rgba(139, 92, 246, 0.06) 45%, transparent 70%);
+  filter: blur(90px);
+}
+
+/* Template Signature Gradient Pill Button */
+.btn-gradient-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: #0b0f1c;
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  z-index: 1;
+}
+
+.btn-gradient-pill::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #00C9FF 0%, #2563EB 50%, #EC4899 100%);
+  z-index: -1;
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+.btn-gradient-pill:hover::before {
+  filter: brightness(1.25) drop-shadow(0 0 14px rgba(236, 72, 153, 0.65));
+}
+
+.btn-gradient-pill:active {
+  transform: scale(0.98);
+}
+
+/* Glass Card Shell */
+.template-card {
+  background: rgba(15, 20, 36, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 36px 0 rgba(0, 0, 0, 0.4);
+}
+
+.template-card-hover {
+  transition: all 0.25s ease;
+}
+
+.template-card-hover:hover {
+  background: rgba(20, 27, 48, 0.85);
+  border-color: rgba(0, 201, 255, 0.3);
+  box-shadow: 0 16px 40px -10px rgba(0, 201, 255, 0.15);
+}
+
+/* Active Nav Underline Pill Indicator from Template */
+.nav-active-pill {
+  position: relative;
+}
+
+.nav-active-pill::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  border-radius: 9999px;
+  background: #00C9FF;
+  box-shadow: 0 0 8px #00C9FF;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #080b14;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e2942;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00C9FF;
+}

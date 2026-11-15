@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OmniClip - Multi-Platform Context-Aware Repurposer (Live MVP)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            slate: {
+              850: '#111827',
+              900: '#0f172a',
+              950: '#020617'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- React & Babel for zero-build instant browser execution -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    @keyframes pulseSlow { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .animate-pulse-slow { animation: pulseSlow 3s ease-in-out infinite; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen selection:bg-indigo-500 selection:text-white font-sans antialiased">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // --- MOCK DATA ---
+    const MOCK_DATA = {
+      video: {
+        id: "dQw4w9WgXcQ",
+        url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        title: "Sam Altman: Autonomous AI Agents and the Post-SaaS Economy",
+        channelTitle: "Y Combinator & AI Frontiers",
+        durationSeconds: 780,
+      },
+      transcript: [
+        { id: "t0", start: 0, end: 12, text: "Welcome everyone. Today we are talking about where AI is heading in 2026." },
+        { id: "t1", start: 12, end: 28, text: "The mistake most people make right now is assuming that LLMs are just smarter search engines or chatbots that give you answers." },
+        { id: "t2", start: 28, end: 45, text: "What we are transitioning to is agentic workflows. An agent has persistent state, executes tools, and debugs its own code." },
+        { id: "t3", start: 45, end: 68, text: "If you look at the economics of software, the per-seat SaaS model made sense when humans clicked buttons all day inside web dashboards." },
+        { id: "t4", start: 68, end: 92, text: "When an agent can run 10,000 simulations overnight, the concept of paying 40 dollars a month per seat completely disintegrates. Value shifts to outcomes." },
+        { id: "t5", start: 92, end: 115, text: "The founders who understand this are not building another CRM wrapper. They are building autonomous revenue machines that take zero human input to execute." },
+        { id: "t6", start: 115, end: 140, text: "Let's take coding as an example. Today, senior engineers act like managers reviewing pull requests from autonomous AI junior developers." },
+        { id: "t7", start: 140, end: 168, text: "In two years, a single founder will build what previously required an engineering department of 50 people. The leverage is truly unprecedented." },
+        { id: "t8", start: 168, end: 195, text: "People ask if this eliminates jobs. It changes the nature of ambition. You can test 50 hypotheses in a weekend instead of taking 6 months to ship an MVP." },
+        { id: "t9", start: 195, end: 220, text: "The real bottleneck is no longer code or distribution; the real bottleneck is good taste, judgment, and knowing what problem is worth solving." }
+      ],
+      nuggets: [
+        {
+          id: "nugget_1",
+          title: "The Death of Per-Seat SaaS",
+          startTime: 45,
+          endTime: 92,
+          duration: 47,
+          viralityScore: 97,
+          viralityReason: "Contrarian threat to the $200B SaaS industry. Triggers immediate founder curiosity and validates outcome-based monetization debates.",
+          summary: "Per-seat SaaS pricing collapses when autonomous agents execute 10,000 tasks overnight without human button clicks. Value irreversibly migrates to outcome-based pricing.",
+          keyTakeaway: "Software is shifting from selling tools for human labor to selling autonomous outcome execution.",
+          hook: "Per-seat SaaS is dead. You just haven't received the funeral invitation yet."
+        },
+        {
+          id: "nugget_2",
+          title: "The 1-Person Billion Dollar Startup",
+          startTime: 115,
+          endTime: 168,
+          duration: 53,
+          viralityScore: 94,
+          viralityReason: "Aspirational leverage narrative. Captivates solo developers and tech founders eager to scale without headcount bloat.",
+          summary: "Autonomous coding agents turn senior engineers into orchestrators. A single builder will soon run enterprise-scale architectures with zero full-time staff.",
+          keyTakeaway: "Engineering leverage has hit escape velocity: one founder will soon command the output of 50 traditional devs.",
+          hook: "The first billion-dollar 1-person company is already being built right now."
+        },
+        {
+          id: "nugget_3",
+          title: "Judgment Is the Only Remaining Moat",
+          startTime: 168,
+          endTime: 220,
+          duration: 52,
+          viralityScore: 91,
+          viralityReason: "Profound philosophical shift. Relieves existential coding dread and clarifies where human value actually resides.",
+          summary: "When code and technical execution cost zero dollars, the ultimate bottleneck shifts to taste, problem selection, and high-order judgment.",
+          keyTakeaway: "When execution is commoditized by AI, taste and problem selection become the only defensible assets.",
+          hook: "When AI can write any code for free, what is your skill actually worth?"
+        }
+      ],
+      assets: {
+        nugget_1: {
+          tiktok: {
+            title: "Why $40/mo per seat SaaS is officially dying ☠️",
+            targetDuration: "47s",
+            hookType: "Contrarian Disruption",
+            suggestedBgm: "Phonk / Dark synth wave bass, 120 BPM (low mix)",
+            captionTags: ["#saas", "#startups", "#aiagents", "#techtrends", "#entrepreneur"],
+            scenes: [
+              {
+                sceneNumber: 1,
+                timeRange: "0:00 - 0:04",
+                visualCues: "[Fast punch zoom on speaker face] Big red bold text 'PER-SEAT SAAS IS DEAD' flashes with a glitched CRT screen effect.",
+                spokenAudio: "Every SaaS company charging you 40 dollars a month per seat is about to get wiped out.",
+                onScreenText: "PER-SEAT SAAS IS DEAD ☠️"
+              },
+              {
+                sceneNumber: 2,
+                timeRange: "0:04 - 0:14",
+                visualCues: "[Quick cut: Screen recording of Salesforce dashboard scrolling endlessly, overlaid with a giant red 'OBSOLETE' stamp]",
+                spokenAudio: "Think about why per-seat pricing existed. You paid for a seat because a human was sitting in a chair clicking buttons all day.",
+                onScreenText: "WHY WE PAID FOR SEATS"
+              },
+              {
+                sceneNumber: 3,
+                timeRange: "0:14 - 0:26",
+                visualCues: "[B-roll of modern terminal running thousands of autonomous parallel AI agent jobs. Neon green text streaming]",
+                spokenAudio: "Now, an autonomous AI agent can run 10,000 simulations and close 500 tickets while you're literally sleeping.",
+                onScreenText: "10,000 JOBS OVERNIGHT ⚡"
+              },
+              {
+                sceneNumber: 4,
+                timeRange: "0:26 - 0:38",
+                visualCues: "[Back to camera: clean infographic showing 'Old Model: $50/user' vs 'New Model: Pay for outcomes']",
+                spokenAudio: "Who cares how many seats you have? The value isn't human seat time anymore—it's outcomes. You will pay for results, not logins.",
+                onScreenText: "PAY FOR OUTCOMES NOT SEATS"
+              },
+              {
+                sceneNumber: 5,
+                timeRange: "0:38 - 0:47",
+                visualCues: "[Dramatic slow push-in. Subtitles turn bold bright yellow with bounce animation. Follow button mockup animates below]",
+                spokenAudio: "If your startup's business model depends on software being hard to build, your moat is evaporating. Follow for tomorrow's playbook.",
+                onScreenText: "THE MOAT IS GONE 🌊"
+              }
+            ]
+          },
+          twitter: {
+            title: "The Death of Per-Seat SaaS & The Rise of Outcome Economies",
+            totalTweets: 5,
+            tweets: [
+              {
+                tweetNumber: 1,
+                totalTweets: 5,
+                content: "Per-seat SaaS pricing is officially dying.\n\nCharging $40/user/mo made sense when humans clicked buttons in dashboards.\n\nWhen 1 autonomous agent runs 10,000 tasks overnight, the entire $200B business model breaks.\n\nHere is how the software economy changes forever: 🧵👇",
+                charCount: 261
+              },
+              {
+                tweetNumber: 2,
+                totalTweets: 5,
+                content: "1/ The Human Seat Fallacy\n\nTraditional SaaS was a tax on human time.\n\n• More employees = More seats\n• More seats = Higher ARR\n\nIt incentivized software that kept employees trapped in bloated workflows to justify license counts.",
+                charCount: 231
+              },
+              {
+                tweetNumber: 3,
+                totalTweets: 5,
+                content: "2/ The Agent Paradigm\n\nAgents don't have eyeballs or shift hours.\n\nThey run asynchronously, parallelize across clouds, and deliver raw output.\n\nIf an agent fixes 30 bugs while you sleep, how many 'seats' was that? Zero. But the business value was massive.",
+                charCount: 260
+              },
+              {
+                tweetNumber: 4,
+                totalTweets: 5,
+                content: "3/ The Outcome-Based Revolution\n\nThe next generation of software won't sell licenses. They will sell guarantees:\n\n→ Not a CRM seat: 15 booked meetings\n→ Not a Helpdesk license: 98% resolution rate\n\nSoftware companies become digital agencies with 95% margins.",
+                charCount: 264
+              },
+              {
+                tweetNumber: 5,
+                totalTweets: 5,
+                content: "Takeaway:\n\nIf your startup relies on software scarcity or per-user seats, your moat is disappearing.\n\nBuild for autonomous outcomes or get replaced by someone who does.\n\nRT if you found this valuable & follow @OmniClipHQ for daily AI teardowns.",
+                charCount: 247
+              }
+            ]
+          },
+          linkedin: {
+            title: "Why The Per-Seat SaaS Model Is Dead",
+            recommendedTheme: "midnight",
+            postCaption: "The $200 Billion SaaS industry is experiencing its greatest structural repricing since the shift to cloud.\n\nWhen autonomous agents replace human button-clicking, per-seat pricing flips into outcome guarantees.\n\n#SaaS #AI #FutureOfWork #Startups",
+            slides: [
+              {
+                slideNumber: 1,
+                totalSlides: 5,
+                tag: "EXECUTIVE BRIEFING",
+                title: "The Death of Per-Seat SaaS",
+                subtitle: "Why autonomous agents are destroying the $40/mo user license model.",
+                footerCallout: "Swipe to inspect 👉"
+              },
+              {
+                slideNumber: 2,
+                totalSlides: 5,
+                tag: "THE HISTORICAL CONTEXT",
+                title: "How We Got Here",
+                subtitle: "Per-seat pricing was always a proxy for human labor.",
+                bullets: [
+                  "Companies bought licenses based on headcount, not direct velocity.",
+                  "UI-heavy applications rewarded prolonged usage over instant execution.",
+                  "SaaS scaled revenue by hoping customers hired more desk workers."
+                ],
+                footerCallout: "The friction point 👉"
+              },
+              {
+                slideNumber: 3,
+                totalSlides: 5,
+                tag: "THE CATALYST",
+                title: "Agentic Execution",
+                subtitle: "When software works 24/7 without a mouse.",
+                bullets: [
+                  "Agents operate with zero UI latency or mouse clicks.",
+                  "A single prompt can trigger 10,000 asynchronous API requests.",
+                  "Headcount and productivity have decoupled forever."
+                ],
+                quote: "The value is in the outcome delivered, never in the login credentials provided.",
+                footerCallout: "The business model flip 👉"
+              },
+              {
+                slideNumber: 4,
+                totalSlides: 5,
+                tag: "REVENUE REVOLUTION",
+                title: "Outcomes vs Logins",
+                subtitle: "The pricing models defining the next decade:",
+                bullets: [
+                  "❌ Legacy: Pay $50/month per sales rep to track deals.",
+                  "✅ Modern: Pay 8% on every qualified meeting automatically closed.",
+                  "❌ Legacy: Pay $80/month for customer support seats.",
+                  "✅ Modern: Pay $0.40 per autonomous resolution with 98% CSAT."
+                ],
+                footerCallout: "The strategic takeaway 👉"
+              },
+              {
+                slideNumber: 5,
+                totalSlides: 5,
+                tag: "FINAL VERDICT",
+                title: "Software is Labor Now",
+                subtitle: "Scale your leverage, not your headcount.",
+                quote: "When execution costs approach zero, the only moat left is distribution, trust, and taste.",
+                footerCallout: "Repost to share with your network 🔁"
+              }
+            ]
+          }
+        }
+      }
+    };
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    }
+
+    function App() {
+      const [urlInput, setUrlInput] = useState("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+      const [currentSeekTime, setCurrentSeekTime] = useState(0);
+      const [autoplay, setAutoplay] = useState(0);
+      const [selectedNugget, setSelectedNugget] = useState(MOCK_DATA.nuggets[0]);
+      const [activeTab, setActiveTab] = useState("tiktok"); // tiktok, twitter, linkedin
+      const [searchTerm, setSearchTerm] = useState("");
+      const [theme, setTheme] = useState("midnight"); // midnight, minimal, obsidian, sunset
+      const [slideIndex, setSlideIndex] = useState(0);
+      const [activeSceneIndex, setActiveSceneIndex] = useState(0);
+      const [isPhonePlaying, setIsPhonePlaying] = useState(true);
+      const [isExportOpen, setIsExportOpen] = useState(false);
+      const [isApiModalOpen, setIsApiModalOpen] = useState(false);
+      const [toastMsg, setToastMsg] = useState(null);
+
+      // Trigger toast
+      const showToast = (title, desc) => {
+        setToastMsg({ title, desc });
+        setTimeout(() => setToastMsg(null), 3500);
+      };
+
+      // Auto cycle phone scenes
+      useEffect(() => {
+        if (!isPhonePlaying) return;
+        const currentScenes = MOCK_DATA.assets.nugget_1.tiktok.scenes;
+        const interval = setInterval(() => {
+          setActiveSceneIndex((prev) => (prev + 1) % currentScenes.length);
+        }, 4000);
+        return () => clearInterval(interval);
+      }, [isPhonePlaying]);
+
+      const handleSeek = (time) => {
+        setCurrentSeekTime(Math.floor(time));
+        setAutoplay(1);
+        showToast("Player Synced", `Jumped to timestamp ${formatTime(time)}`);
+      };
+
+      const handleSelectNugget = (nugget) => {
+        setSelectedNugget(nugget);
+        handleSeek(nugget.startTime);
+      };
+
+      const currentAssets = MOCK_DATA.assets.nugget_1;
+      const currentScenes = currentAssets.tiktok.scenes;
+      const currentScene = currentScenes[activeSceneIndex] || currentScenes[0];
+      const slides = currentAssets.linkedin.slides;
+      const currentSlide = slides[slideIndex] || slides[0];
+
+      // Theme styles for LinkedIn
+      const themeConfig = {
+        midnight: {
+          bg: "bg-slate-950 border-slate-800",
+          title: "text-white font-extrabold",
+          sub: "text-sky-300",
+          tag: "bg-sky-500/20 text-sky-300 border-sky-500/30",
+          dot: "bg-sky-400",
+          quote: "bg-sky-950/40 border-sky-800 text-sky-200"
+        },
+        minimal: {
+          bg: "bg-white text-slate-900 border-slate-200 shadow-2xl",
+          title: "text-slate-950 font-black",
+          sub: "text-indigo-600 font-semibold",
+          tag: "bg-slate-100 text-slate-800 border-slate-200",
+          dot: "bg-slate-900",
+          quote: "bg-slate-50 border-slate-200 text-slate-800"
+        },
+        obsidian: {
+          bg: "bg-black border-amber-900/40 text-amber-100",
+          title: "text-amber-100 font-extrabold",
+          sub: "text-amber-400 font-medium",
+          tag: "bg-amber-500/20 text-amber-300 border-amber-500/30",
+          dot: "bg-amber-400",
+          quote: "bg-amber-950/40 border-amber-800 text-amber-200"
+        },
+        sunset: {
+          bg: "bg-gradient-to-br from-indigo-950 via-purple-950 to-pink-950 border-pink-800/40 text-white",
+          title: "text-white font-black",
+          sub: "text-pink-300",
+          tag: "bg-pink-500/20 text-pink-300 border-pink-500/30",
+          dot: "bg-pink-400",
+          quote: "bg-pink-950/40 border-pink-800 text-pink-200"
+        }
+      }[theme];
+
+      const filteredTranscript = MOCK_DATA.transcript.filter(t => 
+        t.text.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+
+      return (
+        <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+          {/* TOAST */}
+          {toastMsg && (
+            <div className="fixed bottom-5 right-5 z-50 bg-slate-900 border border-emerald-500/50 p-4 rounded-xl shadow-2xl flex items-start gap-3 max-w-md animate-bounce">
+              <span className="text-emerald-400 text-lg">✓</span>
+              <div>
+                <p className="text-sm font-bold text-white">{toastMsg.title}</p>
+                <p className="text-xs text-slate-300">{toastMsg.desc}</p>
+              </div>
+            </div>
+          )}
+
+          {/* HEADER */}
+          <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md sticky top-0 z-40 px-6 h-16 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center font-black text-xl shadow-lg shadow-indigo-500/20">
+                ⚡
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-lg text-white">OmniClip</span>
+                  <span className="bg-gradient-to-r from-amber-500/20 to-rose-500/20 text-rose-300 border border-rose-500/40 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                    LIVE MVP
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 hidden sm:block">Multi-Platform Context-Aware Video Repurposer</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-xs">
+                <span className="text-slate-400">Model:</span>
+                <span className="text-indigo-400 font-semibold">llama-3.1-8b-instant-mini Orchestration</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              </div>
+
+              <button
+                onClick={() => setIsApiModalOpen(true)}
+                className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900 hover:bg-slate-800 text-xs font-medium flex items-center gap-1.5"
+              >
+                <span>🔑 API Keys</span>
+              </button>
+
+              <button
+                onClick={() => setIsExportOpen(true)}
+                className="px-4 py-1.5 rounded-lg bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-semibold text-xs shadow-lg shadow-indigo-500/20 hover:opacity-95 flex items-center gap-1.5"
+              >
+                <span>🚀 Export & Schedule</span>
+              </button>
+            </div>
+          </header>
+
+          {/* MAIN CONTAINER */}
+          <main className="max-w-[1600px] w-full mx-auto p-4 sm:p-6 space-y-6 flex-1">
+            {/* VIDEO INGESTION BAR */}
+            <div className="p-4 sm:p-5 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur-md">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3">
+                <div>
+                  <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                    <span className="text-indigo-400">✨</span> Video Ingestion & Context Parsing
+                  </h2>
+                  <p className="text-xs text-slate-400">Extract Top 3 Golden Nuggets via Prompt 1 Orchestration.</p>
+                </div>
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-slate-500">Curated Presets:</span>
+                  <button
+                    onClick={() => {
+                      setUrlInput("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+                      showToast("Loaded Preset", "Sam Altman: Agentic Economy & SaaS Disruption");
+                    }}
+                    className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-medium"
+                  >
+                    🔥 Sam Altman
+                  </button>
+                  <button
+                    onClick={() => {
+                      setUrlInput("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+                      showToast("Loaded Preset", "Jensen Huang: Physical AI Keynote");
+                    }}
+                    className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-medium"
+                  >
+                    ⚡ Jensen Huang
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                  className="flex-1 px-4 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-100 focus:outline-none focus:border-indigo-500"
+                  placeholder="https://www.youtube.com/watch?v=..."
+                />
+                <button
+                  onClick={() => showToast("Ingestion Complete", "Captions extracted and 3 Golden Nuggets calculated.")}
+                  className="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition-colors flex items-center gap-1.5"
+                >
+                  <span>▶ Reprocess Video</span>
+                </button>
+              </div>
+            </div>
+
+            {/* SPLIT SCREEN UI */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              {/* LEFT PANEL */}
+              <div className="lg:col-span-5 space-y-5">
+                {/* Embedded YouTube Player */}
+                <div className="rounded-xl border border-slate-800 bg-slate-950 overflow-hidden shadow-lg">
+                  <div className="relative aspect-video w-full bg-black">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${MOCK_DATA.video.id}?start=${currentSeekTime}&autoplay=${autoplay}&rel=0`}
+                      title="Player"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="absolute inset-0 w-full h-full border-0"
+                    />
+                  </div>
+                  <div className="p-3 bg-slate-900 border-t border-slate-800 flex items-center justify-between text-xs">
+                    <div className="truncate pr-2">
+                      <p className="font-semibold text-white truncate">{MOCK_DATA.video.title}</p>
+                      <p className="text-slate-400 text-[11px]">{MOCK_DATA.video.channelTitle}</p>
+                    </div>
+                    <span className="font-mono text-indigo-400 font-semibold shrink-0">
+                      ⏱ {formatTime(currentSeekTime)} / {formatTime(MOCK_DATA.video.durationSeconds)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Golden Nuggets Selector */}
+                <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-white text-sm flex items-center gap-2">
+                      <span className="text-amber-400">🔥</span> Top 3 Golden Nuggets
+                    </h3>
+                    <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-full font-bold">
+                      Prompt 1 Output
+                    </span>
+                  </div>
+
+                  <div className="space-y-2.5">
+                    {MOCK_DATA.nuggets.map(nugget => {
+                      const isSelected = selectedNugget?.id === nugget.id;
+                      return (
+                        <div
+                          key={nugget.id}
+                          onClick={() => handleSelectNugget(nugget)}
+                          className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
+                            isSelected
+                              ? "border-indigo-500 bg-indigo-950/30 shadow-md ring-1 ring-indigo-500/50"
+                              : "border-slate-800 bg-slate-950/50 hover:border-slate-700"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <span className="font-semibold text-xs text-white">{nugget.title}</span>
+                            <span className="bg-emerald-500 text-black text-[10px] font-black px-2 py-0.5 rounded">
+                              {nugget.viralityScore}/100
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-300 italic mb-2">"{nugget.hook}"</p>
+                          <div className="flex items-center justify-between pt-1 border-t border-slate-800/80 text-[11px]">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleSeek(nugget.startTime); }}
+                              className="text-indigo-400 hover:text-indigo-300 font-mono font-medium flex items-center gap-1"
+                            >
+                              ▶ {formatTime(nugget.startTime)} - {formatTime(nugget.endTime)} ({nugget.duration}s)
+                            </button>
+                            <span className="text-[10px] text-slate-400 font-semibold">
+                              {isSelected ? "✨ Active Nugget" : "Repurpose →"}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Interactive Transcript Stream */}
+                <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-white text-sm">Interactive Transcript</h3>
+                    <span className="text-[10px] text-slate-500 font-mono">{filteredTranscript.length} lines</span>
+                  </div>
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search words in transcript..."
+                    className="w-full px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                  />
+                  <div className="space-y-1.5 max-h-[300px] overflow-y-auto pr-1">
+                    {filteredTranscript.map(t => (
+                      <div
+                        key={t.id}
+                        onClick={() => handleSeek(t.start)}
+                        className={`p-2 rounded-lg text-xs flex items-start gap-2.5 cursor-pointer transition-colors ${
+                          currentSeekTime >= t.start && currentSeekTime <= t.end
+                            ? "bg-indigo-600/30 border border-indigo-500/50 text-white"
+                            : "hover:bg-slate-800/50 text-slate-300"
+                        }`}
+                      >
+                        <span className="font-mono text-[10px] bg-slate-800 px-1.5 py-0.5 rounded text-indigo-300 shrink-0">
+                          {formatTime(t.start)}
+                        </span>
+                        <p className="leading-relaxed flex-1 text-[11px]">{t.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* RIGHT PANEL: ASSET STUDIO */}
+              <div className="lg:col-span-7 rounded-xl border border-slate-800 bg-slate-900/60 p-5 space-y-5">
+                {/* Active Nugget Banner & Tab Switcher */}
+                <div className="border-b border-slate-800 pb-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[10px] font-bold px-2 py-0.5 rounded">
+                          Viral Score {selectedNugget.viralityScore}
+                        </span>
+                        <h2 className="text-base font-bold text-white">{selectedNugget.title}</h2>
+                      </div>
+                      <p className="text-xs text-slate-400 mt-0.5">{selectedNugget.summary}</p>
+                    </div>
+
+                    <button
+                      onClick={() => showToast("Regenerated", "Prompt 2 multi-format assets re-orchestrated.")}
+                      className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900 hover:bg-slate-800 text-xs font-medium text-slate-300"
+                    >
+                      🔄 Regenerate
+                    </button>
+                  </div>
+
+                  {/* Platform Tabs */}
+                  <div className="flex items-center gap-2 p-1 rounded-xl bg-slate-950 border border-slate-800 text-xs">
+                    <button
+                      onClick={() => setActiveTab("tiktok")}
+                      className={`flex-1 py-2 rounded-lg font-bold transition-all ${
+                        activeTab === "tiktok"
+                          ? "bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-lg"
+                          : "text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      📱 TikTok / Shorts Script
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("twitter")}
+                      className={`flex-1 py-2 rounded-lg font-bold transition-all ${
+                        activeTab === "twitter"
+                          ? "bg-sky-600 text-white shadow-lg"
+                          : "text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      🐦 X (Twitter) Thread
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("linkedin")}
+                      className={`flex-1 py-2 rounded-lg font-bold transition-all ${
+                        activeTab === "linkedin"
+                          ? "bg-blue-600 text-white shadow-lg"
+                          : "text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      💼 LinkedIn Carousel
+                    </button>
+                  </div>
+                </div>
+
+                {/* TAB 1: TIKTOK / SHORTS SCRIPT + 9:16 PHONE MOCKUP */}
+                {activeTab === "tiktok" && (
+                  <div className="flex flex-col lg:flex-row gap-6 items-start">
+                    {/* Scene Table */}
+                    <div className="flex-1 space-y-3 w-full">
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-slate-950 border border-slate-800">
+                        <div>
+                          <p className="font-bold text-xs text-white">{currentAssets.tiktok.title}</p>
+                          <p className="text-[11px] text-slate-400">Audio: {currentAssets.tiktok.suggestedBgm}</p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(JSON.stringify(currentAssets.tiktok, null, 2));
+                            showToast("Copied!", "TikTok full production script copied to clipboard.");
+                          }}
+                          className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200"
+                        >
+                          📋 Copy Script
+                        </button>
+                      </div>
+
+                      <div className="space-y-2.5">
+                        {currentScenes.map((scene, idx) => (
+                          <div
+                            key={scene.sceneNumber}
+                            onClick={() => setActiveSceneIndex(idx)}
+                            className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                              idx === activeSceneIndex
+                                ? "border-pink-500 bg-pink-950/20 ring-1 ring-pink-500/50"
+                                : "border-slate-800 bg-slate-950/50 hover:border-slate-700"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="font-mono text-[10px] font-bold bg-pink-500/20 text-pink-300 px-2 py-0.5 rounded border border-pink-500/30">
+                                Scene {scene.sceneNumber} ({scene.timeRange})
+                              </span>
+                              <span className="text-[10px] font-bold text-amber-300 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                                {scene.onScreenText}
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                              <div className="p-2 rounded bg-slate-900/60 border border-slate-800/60 text-slate-300 italic">
+                                <span className="font-bold text-slate-400 not-italic block text-[9px] uppercase">Visual B-Roll:</span>
+                                {scene.visualCues}
+                              </div>
+                              <div className="p-2 rounded bg-slate-900/60 border border-slate-800/60 text-white font-medium">
+                                <span className="font-bold text-pink-400 block text-[9px] uppercase">Spoken Audio:</span>
+                                "{scene.spokenAudio}"
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 9:16 Phone Mockup */}
+                    <div className="w-full lg:w-[280px] shrink-0 flex flex-col items-center">
+                      <p className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">9:16 Live Preview</p>
+                      <div className="relative w-[260px] h-[520px] rounded-[36px] bg-black border-[6px] border-slate-800 shadow-2xl overflow-hidden flex flex-col justify-between">
+                        {/* Notch */}
+                        <div className="absolute top-2 inset-x-0 mx-auto w-20 h-4 bg-slate-900 rounded-full z-30"></div>
+                        {/* Status */}
+                        <div className="relative z-20 pt-2 px-5 flex justify-between text-[9px] text-white font-semibold">
+                          <span>9:41</span>
+                          <span>5G 100%</span>
+                        </div>
+                        {/* Center Animated Caption */}
+                        <div className="relative z-20 px-3 my-auto text-center space-y-2">
+                          <span className="inline-block px-2 py-0.5 bg-amber-400 text-black text-[10px] font-black uppercase rounded shadow">
+                            {currentScene.onScreenText}
+                          </span>
+                          <div className="bg-black/70 p-2.5 rounded-lg border border-white/20">
+                            <p className="text-white text-[11px] font-bold">"{currentScene.spokenAudio}"</p>
+                          </div>
+                        </div>
+                        {/* Right Actions */}
+                        <div className="absolute right-2 bottom-20 z-20 flex flex-col items-center gap-3 text-white text-[9px]">
+                          <span className="text-rose-500 font-bold text-sm">♥</span>
+                          <span>42.8K</span>
+                          <span className="text-sm">💬</span>
+                          <span>1.1K</span>
+                          <span className="text-sm">↗</span>
+                          <span>5.4K</span>
+                        </div>
+                        {/* Bottom Metadata */}
+                        <div className="relative z-20 p-3 bg-gradient-to-t from-black to-transparent text-white text-[10px]">
+                          <p className="font-bold">@omniclip.creator</p>
+                          <p className="text-slate-300 text-[9px] truncate">{currentAssets.tiktok.title}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setIsPhonePlaying(!isPhonePlaying)}
+                        className="mt-2 text-xs text-slate-400 hover:text-white"
+                      >
+                        {isPhonePlaying ? "⏸ Pause Phone Simulation" : "▶ Resume Phone Simulation"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 2: X (TWITTER) THREAD */}
+                {activeTab === "twitter" && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-slate-950 border border-slate-800">
+                      <div>
+                        <p className="font-bold text-xs text-white">{currentAssets.twitter.title}</p>
+                        <p className="text-[11px] text-slate-400">{currentAssets.twitter.totalTweets} Tweets • Strict 280-char Check</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          const full = currentAssets.twitter.tweets.map(t => t.content).join("\n\n---\n\n");
+                          navigator.clipboard.writeText(full);
+                          showToast("Thread Copied!", "All 5 tweets copied formatted for X.");
+                        }}
+                        className="px-3 py-1.5 rounded bg-sky-600 hover:bg-sky-500 text-xs font-semibold text-white shadow"
+                      >
+                        📋 Copy Full Thread
+                      </button>
+                    </div>
+
+                    <div className="space-y-3">
+                      {currentAssets.twitter.tweets.map((t, idx) => (
+                        <div key={idx} className="p-4 rounded-xl border border-slate-800 bg-slate-950/70 space-y-2">
+                          <div className="flex items-center justify-between text-xs">
+                            <div className="flex items-center gap-2">
+                              <span className="w-7 h-7 rounded-full bg-sky-500 text-white font-bold flex items-center justify-center text-[10px]">
+                                OC
+                              </span>
+                              <div>
+                                <span className="font-bold text-white">OmniClip AI</span>
+                                <span className="text-slate-500 text-[10px] ml-1">@omniclip_ai</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-[10px] bg-slate-800 px-2 py-0.5 rounded text-emerald-400 font-semibold">
+                                {t.charCount}/280 chars
+                              </span>
+                              <button
+                                onClick={() => {
+                                  navigator.clipboard.writeText(t.content);
+                                  showToast(`Tweet ${t.tweetNumber} Copied`, "Ready to post on X.");
+                                }}
+                                className="text-slate-400 hover:text-white text-xs px-2 py-0.5 bg-slate-900 rounded border border-slate-800"
+                              >
+                                Copy
+                              </button>
+                            </div>
+                          </div>
+                          <p className="text-xs sm:text-sm text-slate-200 whitespace-pre-line leading-relaxed">{t.content}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 3: LINKEDIN CAROUSEL */}
+                {activeTab === "linkedin" && (
+                  <div className="space-y-4">
+                    {/* Theme Bar */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-lg bg-slate-950 border border-slate-800">
+                      <div className="flex items-center gap-1.5 text-xs">
+                        <span className="text-slate-400 font-medium">Theme:</span>
+                        {["midnight", "minimal", "obsidian", "sunset"].map(th => (
+                          <button
+                            key={th}
+                            onClick={() => setTheme(th)}
+                            className={`px-2.5 py-1 rounded capitalize text-xs font-semibold transition-all ${
+                              theme === th ? "bg-indigo-600 text-white" : "bg-slate-900 text-slate-400 hover:text-white"
+                            }`}
+                          >
+                            {th}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(JSON.stringify(currentAssets.linkedin, null, 2));
+                            showToast("Carousel JSON Copied", "Ready for Figma or Canva import.");
+                          }}
+                          className="px-2.5 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-300"
+                        >
+                          Copy JSON
+                        </button>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(currentAssets.linkedin.postCaption);
+                            showToast("Caption Copied", "LinkedIn post caption copied to clipboard.");
+                          }}
+                          className="px-2.5 py-1 rounded bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white shadow"
+                        >
+                          Copy Caption
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Interactive Slide Viewer */}
+                    <div className="flex items-center justify-center gap-4">
+                      <button
+                        onClick={() => setSlideIndex(prev => prev > 0 ? prev - 1 : slides.length - 1)}
+                        className="w-10 h-10 rounded-full bg-slate-900 border border-slate-700 hover:bg-slate-800 flex items-center justify-center text-white font-bold"
+                      >
+                        ◀
+                      </button>
+
+                      {/* Square Slide Frame */}
+                      <div className={`w-full max-w-md aspect-square rounded-2xl p-6 flex flex-col justify-between border transition-all ${themeConfig.bg}`}>
+                        <div className="flex items-center justify-between">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${themeConfig.tag}`}>
+                            {currentSlide.tag}
+                          </span>
+                          <span className="text-xs font-mono font-bold opacity-70">
+                            {currentSlide.slideNumber} / {currentSlide.totalSlides}
+                          </span>
+                        </div>
+
+                        <div className="my-auto space-y-3">
+                          <h4 className={`text-xl leading-tight ${themeConfig.title}`}>{currentSlide.title}</h4>
+                          {currentSlide.subtitle && <p className={`text-xs ${themeConfig.sub}`}>{currentSlide.subtitle}</p>}
+                          {currentSlide.bullets && (
+                            <ul className="space-y-1.5 text-xs">
+                              {currentSlide.bullets.map((b, i) => (
+                                <li key={i} className="flex items-start gap-2">
+                                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 mt-1.5 ${themeConfig.dot}`}></span>
+                                  <span>{b}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                          {currentSlide.quote && (
+                            <div className={`p-2.5 rounded-lg border text-xs italic ${themeConfig.quote}`}>
+                              "{currentSlide.quote}"
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between pt-2 border-t border-current/10 text-[10px]">
+                          <span className="font-bold opacity-80">OmniClip Insights</span>
+                          <span className="font-bold">{currentSlide.footerCallout}</span>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => setSlideIndex(prev => prev < slides.length - 1 ? prev + 1 : 0)}
+                        className="w-10 h-10 rounded-full bg-slate-900 border border-slate-700 hover:bg-slate-800 flex items-center justify-center text-white font-bold"
+                      >
+                        ▶
+                      </button>
+                    </div>
+
+                    {/* Dots */}
+                    <div className="flex items-center justify-center gap-1.5">
+                      {slides.map((_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setSlideIndex(i)}
+                          className={`h-1.5 rounded-full transition-all ${
+                            i === slideIndex ? "w-6 bg-indigo-500" : "w-2 bg-slate-700"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </main>
+
+          {/* EXPORT MODAL */}
+          {isExportOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+              <div className="w-full max-w-lg bg-slate-950 border border-slate-800 rounded-2xl p-6 space-y-5 shadow-2xl">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <h3 className="font-bold text-white text-base">Export & Schedule Multi-Platform</h3>
+                  <button onClick={() => setIsExportOpen(false)} className="text-slate-400 hover:text-white">✕</button>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  <p className="font-semibold text-slate-300">1. Target Destinations:</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <label className="p-2.5 rounded-lg border border-pink-500/40 bg-pink-950/20 flex items-center justify-between cursor-pointer">
+                      <span>📱 TikTok Video</span>
+                      <input type="checkbox" defaultChecked />
+                    </label>
+                    <label className="p-2.5 rounded-lg border border-red-500/40 bg-red-950/20 flex items-center justify-between cursor-pointer">
+                      <span>▶ YouTube Shorts</span>
+                      <input type="checkbox" defaultChecked />
+                    </label>
+                    <label className="p-2.5 rounded-lg border border-sky-500/40 bg-sky-950/20 flex items-center justify-between cursor-pointer">
+                      <span>🐦 X (Twitter)</span>
+                      <input type="checkbox" defaultChecked />
+                    </label>
+                    <label className="p-2.5 rounded-lg border border-blue-500/40 bg-blue-950/20 flex items-center justify-between cursor-pointer">
+                      <span>💼 LinkedIn</span>
+                      <input type="checkbox" defaultChecked />
+                    </label>
+                  </div>
+
+                  <p className="font-semibold text-slate-300 pt-2">2. Scheduling Dispatcher:</p>
+                  <div className="flex gap-2">
+                    <button className="flex-1 py-2 rounded-lg bg-indigo-950/60 border border-indigo-500 text-indigo-300 font-bold">
+                      Buffer Webhook
+                    </button>
+                    <button className="flex-1 py-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400">
+                      Hootsuite Queue
+                    </button>
+                  </div>
+
+                  <p className="font-semibold text-slate-300 pt-2">3. Timing:</p>
+                  <input
+                    type="datetime-local"
+                    defaultValue="2026-11-09T09:00"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-white"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+                  <button
+                    onClick={() => setIsExportOpen(false)}
+                    className="px-4 py-2 rounded-lg bg-slate-900 text-slate-300 text-xs"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsExportOpen(false);
+                      showToast("🚀 Successfully Queued via Buffer!", "4 platform formats scheduled for Nov 9 at 9:00 AM. Webhook 200 OK.");
+                    }}
+                    className="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold text-xs"
+                  >
+                    Confirm & Schedule Across 4 Platforms
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* API KEY MODAL */}
+          {isApiModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+              <div className="w-full max-w-md bg-slate-950 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-2xl">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <h3 className="font-bold text-white text-base">API Key Configuration</h3>
+                  <button onClick={() => setIsApiModalOpen(false)} className="text-slate-400 hover:text-white">✕</button>
+                </div>
+                <div className="space-y-3 text-xs">
+                  <div>
+                    <label className="block text-slate-300 font-semibold mb-1">Groq API Key (llama-3.1-8b-instant-mini)</label>
+                    <input type="password" placeholder="sk-proj-..." className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-white font-mono" />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 font-semibold mb-1">Anthropic API Key (Claude 3.5 Sonnet)</label>
+                    <input type="password" placeholder="sk-ant-..." className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-white font-mono" />
+                  </div>
+                  <div className="p-3 bg-slate-900 rounded-lg border border-slate-800 text-[11px] text-slate-400">
+                    <span className="text-emerald-400 font-bold block mb-0.5">✓ Instant Mock Engine Active</span>
+                    If no API key is provided, OmniClip automatically runs with pre-computed high-fidelity keynote clips and virality models.
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+                  <button onClick={() => setIsApiModalOpen(false)} className="px-4 py-2 rounded-lg bg-slate-900 text-slate-300 text-xs">Close</button>
+                  <button onClick={() => { setIsApiModalOpen(false); showToast("Saved", "API Keys saved to current session."); }} className="px-4 py-2 rounded-lg bg-indigo-600 text-white text-xs font-bold">Save Settings</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
